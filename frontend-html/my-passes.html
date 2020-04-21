@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="description" content="">
+  <meta name="author" content="">
+
+  <title>Pass Attractions</title>
+
+  <!-- Bootstrap core CSS -->
+  <link href="vendor/bootstrap/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Custom styles for this template -->
+  <link href="css/shop-homepage.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+  <!-- Navigation -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+    <div class="container">
+      <a class="navbar-brand" href="#">Pass Attractions</a>
+      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive" aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarResponsive">
+        <ul class="navbar-nav ml-auto">
+          <li class="nav-item active">
+            <a class="nav-link" href="#">Home
+              <span class="sr-only">(current)</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Page Content -->
+  <div class="container">
+
+    <div class="row">
+
+      <div class="col-lg-3">
+
+        <h1 class="my-4">Add customer</h1>
+        <div class="list-group">
+          <a href="/" class="list-group-item">Passes</a>
+          <a href="/add-customer" class="list-group-item">New Customer</a>
+          <a href="/my-passes" class="list-group-item">My Passes</a>
+          <a href="/passvendor" class="list-group-item">Vendor</a>
+          
+        </div>
+
+      </div>
+      <!-- /.col-lg-3 -->
+
+      <div class="col-lg-9">
+         <div class="row">
+          <div class="col-lg-6 my-4 mt-4 pt-4">
+            <form id="target">
+              <div class="form-group">
+                <label for="formGroupExampleInput">Email address</label>
+                <input type="text" class="form-control" id="formGroupExampleInput" placeholder="Email address">
+              </div>
+              <button type="button" id="submitBtn" class="btn btn-primary">Submit</button>
+            </form>
+          </div>
+        </div>    
+        <div class="row" id ="allpass">    
+        <!-- /.row -->
+
+      </div>
+      <!-- /.col-lg-9 -->
+
+    </div>
+    <!-- /.row -->
+
+  </div>
+  <!-- /.container -->
+
+  <!-- Footer -->
+  <footer class="py-5 bg-dark">
+    <div class="container">
+      <p class="m-0 text-center text-white">Copyright &copy; Your Website 2019</p>
+    </div>
+    <!-- /.container -->
+  </footer>
+
+  <!-- Bootstrap core JavaScript -->
+  <script src="vendor/jquery/jquery.min.js"></script>
+  <script src="vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+
+<script type="text/javascript">
+    var passes = [];    
+    var myObj;
+    
+$(document).ready(function(){
+ $( '#submitBtn' ).on( 'click', function ( e ) {
+    e.preventDefault();
+    $.ajax({
+        url: "/v2/customerid",
+        headers: {
+        'customer_email': $("#formGroupExampleInput").val()
+        },
+        contentType: 'application/json; charset=utf-8',
+        data: { 
+          customer_email: $("#formGroupExampleInput").val()
+            },
+        method: 'GET',
+        // dataType: 'json',
+        cache: false,
+        success: function(data) {
+            customerid = data.customer_id;
+            console.log(data);
+          },
+          complete:function(){
+              $.ajax({
+                  type: "GET",
+                  url: "/v1/mypass",
+                  contentType: 'application/json; charset=utf-8',
+                  headers: {
+                    'customer_id': customerid
+                    },
+                  data: JSON.stringify({  
+                      "customer_id": customerid
+                  }),
+                  success: function(result) {
+                    console.log('success from allpasses in JS');
+            
+                    Array.prototype.push.apply(passes, result );
+                    console.log(passes);
+
+
+
+                    if(passes.length != 0){
+                      for(var i = 0; i < passes.length; i++) {
+                          var obj = passes[i];
+
+                          var elm = '<div id="pass-items" class="col-lg-4 col-md-6 mb-4">' +
+                                    '<div class="card h-100">' +
+                                      '<a id="input'+i+'" href="#exampleModal'+i+'"  data-toggle="modal" data-passid="'+obj.pass_id+'" data-vendorid="'+obj.vendor.vendor_id+'"><img class="card-img-top" src="css/images/'+obj.pass_city+'.png" alt="" ></a>' +
+                                      '<div class="card-body">' +
+                                        '<h4 class="card-title">' +
+                                          '<a href="#">'+obj.pass_city+'</a>' +
+                                        '</h4>' +
+                                        '<h5> Valid for '+obj.pass_length+' months</h5>' +
+                                        '<p class="card-text">'+
+                                        'Vendor id: ' + obj.vendor.vendor_id+
+                                        '</p>' +
+                                      '</div>' +
+                                      '<div class="card-footer">' +
+                                        '<small class="text-muted">&#9733; &#9733; &#9733; &#9733; &#9734;</small>' +
+                                      '</div>' +
+                                    '</div>' +
+                                 '</div>';
+                      $(allpass).append(elm);
+
+                      console.log(obj.pass_city);
+                    }
+                  }
+                  },
+                  error: function(result) {
+                      alert('error');
+                  }
+              });
+            },
+            error: function(result) {
+              $('#exampleModalLabel').text("Error EmailId doesnt exist")
+               // alert('EmailId doesnt exist');
+            }
+
+            });
+            
+            
+        });
+
+ });
+  </script>
+</body>
+
+</html>
